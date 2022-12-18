@@ -18,17 +18,18 @@ public class DonneesActor extends AbstractActor {
     @Override
     public Receive createReceive() {
         return receiveBuilder()
-                .match(GetClient.class, message -> sendClient(message.id,getSelf()))
+                .match(GetClient.class, message -> sendClient(message,getSender()))
+                .match(UpdateClient.class, message -> updateSolde(message,getSender()))
                 .build();
     }
 
-    private void sendClient(String id,ActorRef actor) {
+    private void sendClient(final GetClient message,ActorRef actor) {
         int i = 0;
         HashMap<String,String> row = new HashMap<>();
         try {
             Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/banque","root","root");
             Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery("select  * from client where id='"+id+"'");
+            ResultSet resultSet = statement.executeQuery("select  * from client where id='"+message.id+"'");
             while (resultSet.next()){
                 row.put("id",resultSet.getString("id"));
                 row.put("nom",resultSet.getString("nom"));
@@ -42,8 +43,17 @@ public class DonneesActor extends AbstractActor {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        System.out.println(row);
-        actor.tell(row,this.getSelf());
+        actor.tell(row,getSelf());
+    }
+    private void updateSolde(final UpdateClient message,ActorRef actor) {
+        HashMap<String,String> row = new HashMap<>();
+        try {
+            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/banque","root","root");
+            PreparedStatement statement = connection.prepareStatement("UPDATE client SET solde = "+message.solde+" where id='"+message.id+"'");
+            statement.execute();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
@@ -58,6 +68,23 @@ public class DonneesActor extends AbstractActor {
         }
 
     }
+    public static class UpdateClient implements Message {
+        String id;
+        int solde;
+        public UpdateClient(String id,int solde) {
+            this.id = id;
+            this.solde = solde;
+        }
+
+    }
+    public static class GetBanquier implements Message {
+        String id;
+        public GetBanquier(String id) {
+            this.id = id;
+        }
+
+    }
+
     // Définition des messages en inner classes
     public interface Message {}
 }

@@ -21,24 +21,22 @@ public class BanquierActor extends AbstractActor {
     @Override
     public Receive createReceive() {
         return receiveBuilder()
-                .match(CrediterCompte.class, message -> estCreditable(message.montant,message.client,getSender()))
-                .match(DebiterCompte.class, message -> estDebitable(message.montant,message.client,getSender()))
+                .match(CrediterCompte.class, message -> estCreditable(message,getSender()))
+                .match(DebiterCompte.class, message -> estDebitable(message,getSender()))
                 //.match(SayBye.class, message -> sayBye(message))
                 .build();
     }
 
-    private void estDebitable(int montant, HashMap<String, String> client, ActorRef actor) {
-        System.out.println("Etat solde client:"+client.get("solde"));
-        int solde = Integer.valueOf(client.get("solde"));
-        int soldeMontantDecouvert = Integer.valueOf(client.get("soldeMontantDecouvert"));
-        actor.tell((solde-montant)>soldeMontantDecouvert,this.getSelf());
+    private void estDebitable(final DebiterCompte message, ActorRef actor) {
+        int solde = Integer.valueOf(message.client.get("solde"));
+        int soldeMontantDecouvert = Integer.valueOf(message.client.get("soldeMontantDecouvert"));
+        actor.tell((solde-message.montant)>soldeMontantDecouvert,this.getSelf());
     }
 
-    private void estCreditable(int montant, HashMap<String,String> client, ActorRef actor) {
-        int solde = Integer.valueOf(client.get("solde"));
-        int soldePlafondCompte = Integer.valueOf(client.get("soldePlafondCompte"));
-        System.out.println("Etat solde client:"+client.get("solde"));
-        actor.tell((solde+montant)<soldePlafondCompte,this.getSelf());
+    private void estCreditable(final CrediterCompte message, ActorRef actor) {
+        int solde = Integer.valueOf(message.client.get("solde"));
+        int soldePlafondCompte = Integer.valueOf(message.client.get("soldePlafondCompte"));
+        actor.tell((solde+message.montant)<soldePlafondCompte,this.getSelf());
     }
 
 

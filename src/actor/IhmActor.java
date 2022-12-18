@@ -5,6 +5,7 @@ import akka.actor.Props;
 import akka.actor.ActorRef;
 import akka.pattern.Patterns;
 
+import java.sql.*;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.InputMismatchException;
@@ -41,7 +42,7 @@ public class IhmActor extends AbstractActor {
     }
     private void sendMontant(ActorRef actor) {
         Scanner sc = new Scanner(System.in);
-        System.out.println("Veuillez entrer le montant de la transaction: ");
+        System.out.print("Veuillez entrer le montant de la transaction: ");
         String mdp = sc.nextLine();
         actor.tell(mdp,this.getSelf());
     }
