@@ -7,3 +7,5 @@ Pour compiler et exécuter, utiliser Maven, avec les commandes suivantes :
 >mvn compile
 > 
 > mvn exec:java -Dexec.mainClass="sd.akka.App"
+
+Veuillez installer mysql et executer sur le serveur le script banque.sql.
